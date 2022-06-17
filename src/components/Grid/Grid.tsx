@@ -47,10 +47,25 @@ export const Grid: FC<IGridProps> = ({ size }) => {
     // detect where to go 
     const keypress = (e: any) => {
         e.preventDefault()
-        if (e.key === "ArrowUp" || e.key === "w") return setDirection(() => Direction.Up)
-        if (e.key === "ArrowDown" || e.key === "s") return setDirection(Direction.Down)
-        if (e.key === "ArrowLeft" || e.key === "a") return setDirection(Direction.Left)
-        if (e.key === "ArrowRight" || e.key === "d") return setDirection(Direction.Right)
+        console.log(direction)
+        if (e.key === "ArrowUp" || e.key === "w") {
+         setDirection((_prevState) => Direction.Up)
+
+        }
+        if (e.key === "ArrowDown" || e.key === "s") {
+        setDirection((_prevState) => Direction.Down)
+
+        }
+        if (e.key === "ArrowLeft" || e.key === "a") {
+           setDirection((_prevState) => Direction.Left)
+
+
+        }
+        if (e.key === "ArrowRight" || e.key === "d") {
+          setDirection((_prevState) => Direction.Right)
+
+
+        }
 
     }
 
@@ -70,6 +85,7 @@ export const Grid: FC<IGridProps> = ({ size }) => {
         let newArr = [...grid]; // copying the old datas array
         let newPositon = [...startingPosition]
         let newBody = [...body]
+
         // console.log(body)
         if (isPlaying) {
             try {
@@ -77,12 +93,7 @@ export const Grid: FC<IGridProps> = ({ size }) => {
                 switch (direction) {
                     case Direction.Up:
                         if (newPositon[0] - 1 < 0) throw new Error('You lost')
-                        // if body contains one above it error
-                            console.log(newBody)
-                            console.log(newPositon)
-
-                            newPositon[0] = newPositon[0] - 1
-
+                        newPositon[0] = newPositon[0] - 1
                         break;
                     case Direction.Down:
                         if (newPositon[0] + 1 > size - 1) throw new Error('You lost')
@@ -98,7 +109,7 @@ export const Grid: FC<IGridProps> = ({ size }) => {
                         break;
 
                 }
-
+                if (newBody.find((el) => el[0] === newPositon[0] && el[1] === newPositon[1])) throw new Error('You lost')
                 newBody.splice(-1, 1)
                 newBody.unshift(newPositon)
                 newArr = createGrid(size)
@@ -133,9 +144,9 @@ export const Grid: FC<IGridProps> = ({ size }) => {
                 newPositon = [size / 2, size / 2]
 
             } finally {
+                setStartingPosition(newPositon)
 
                 setBody(newBody)
-                setStartingPosition(newPositon)
                 setGrid(newArr)
             }
 
@@ -149,7 +160,10 @@ export const Grid: FC<IGridProps> = ({ size }) => {
         // only 1 food at a time 
         setFood([Math.floor(Math.random() * size), Math.floor(Math.random() * size)])
     }
+    useEffect(() => {
+        // console.log(body.includes(startingPosition, 2))
 
+    }, [startingPosition])
 
     useEffect(() => {
         autoMove()
