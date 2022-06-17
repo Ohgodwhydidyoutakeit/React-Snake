@@ -1,0 +1,14 @@
+.gridContainer {
+    border: 5px solid black;
+    display: grid;
+    grid-template-rows: repeat(20, 1fr);
+    grid-template-columns: repeat(20, 1fr);
+}
+.game-header {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+button {
+    height: 2rem;
+}
