@@ -10,5 +10,8 @@ export const Cell: FC<ICellProps> = ({ value }) => {
         {
             value === 3 && 'X'
         }
+        {
+            value === 2 && 'F'
+        }
     </div>)
 }
