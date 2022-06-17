@@ -29,10 +29,14 @@ export const Grid: FC<IGridProps> = ({ size }) => {
     const [gameTime, setGameTime] = useState<number>(0)
     const [direction, setDirection] = useState<Direction>(Direction.Up)
     const [length, setLength] = useState<number>(3)
+    const [body, setBody] = useState([[startingPosition[0], startingPosition[1]], [startingPosition[0], startingPosition[1] - 1], [startingPosition[0], startingPosition[1] - 2]])
     const setup = () => {
         // starting position
         let newArr = [...grid]; // copying the old datas array
         newArr[startingPosition[0]][startingPosition[1]] = 3
+        newArr[startingPosition[0]][startingPosition[1] - 1] = 3
+        newArr[startingPosition[0]][startingPosition[1] - 2] = 3
+
         setGrid(newArr)
 
     }
@@ -49,7 +53,7 @@ export const Grid: FC<IGridProps> = ({ size }) => {
     useEffect(() => {
         const interval = setInterval(() => {
             if (isPlaying) setGameTime((_prevTime) => _prevTime + 1)
-        }, 250);
+        }, 100);
         return () => clearInterval(interval)
     }, [isPlaying]);
 
@@ -57,31 +61,48 @@ export const Grid: FC<IGridProps> = ({ size }) => {
         // moves right
         let newArr = [...grid]; // copying the old datas array
         let newPositon = [...startingPosition]
+        let newBody = [...body]
+        // console.log(body)
         if (isPlaying) {
+
+            // setBody([[startingPosition[0], startingPosition[1]], ])
             switch (direction) {
                 case Direction.Up:
-                    newArr[startingPosition[0] - 1][startingPosition[1]] = 3;
+                    // newArr[startingPosition[0] - 1][startingPosition[1]] = 3;
                     newPositon[0] = newPositon[0] - 1
-                    setStartingPosition(newPositon)
                     break;
                 case Direction.Down:
-                    newArr[startingPosition[0] + 1][startingPosition[1]] = 3;
+                    // newArr[startingPosition[0] + 1][startingPosition[1]] = 3;
                     newPositon[0] = newPositon[0] + 1
-                    setStartingPosition(newPositon)
                     break;
                 case Direction.Left:
-                    newArr[startingPosition[0]][startingPosition[1] - 1] = 3;
+                    // newArr[startingPosition[0]][startingPosition[1] - 1] = 3;
                     newPositon[1] = newPositon[1] - 1
-                    setStartingPosition(newPositon)
                     break;
                 case Direction.Right:
-                    newArr[startingPosition[0]][startingPosition[1] + 1] = 3;
+                    // newArr[startingPosition[0]][startingPosition[1] + 1] = 3;
                     newPositon[1] = newPositon[1] + 1
-                    setStartingPosition(newPositon)
                     break;
 
             }
+
+            let temp0 = newBody[0]
+            let temp1 = newBody[1]
+            newBody[2] = temp1
+            newBody[1] = temp0
+            newBody[0] = newPositon
+
+          
+
+            
+
+            setBody(newBody)
+            setStartingPosition(newPositon)
         }
+        newArr = createGrid(size)
+        newArr[newBody[0][0]][newBody[0][1]] = 3;
+        newArr[newBody[1][0]][newBody[1][1]] = 3;
+        newArr[newBody[2][0]][newBody[2][1]] = 3;
         setGrid(newArr)
 
     }
@@ -91,7 +112,7 @@ export const Grid: FC<IGridProps> = ({ size }) => {
     }, [gameTime])
     useEffect(() => {
         setup()
-        console.log(grid)
+        // console.log(grid)
 
         window.addEventListener('keydown', (e) => keypress(e))
         return () => window.removeEventListener('keydown', keypress)
