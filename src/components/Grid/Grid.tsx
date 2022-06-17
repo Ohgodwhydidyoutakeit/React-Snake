@@ -31,33 +31,52 @@ export const Grid: FC<IGridProps> = ({ size }) => {
     const [length, setLength] = useState<number>(3)
     const [body, setBody] = useState([[startingPosition[0], startingPosition[1]], [startingPosition[0], startingPosition[1] - 1], [startingPosition[0], startingPosition[1] - 2]])
     const [food, setFood] = useState<number[]>([])
+    const [errorMessage, setErrorMessage] = useState<string>('')
     const setup = () => {
         // starting position
         let newArr = [...grid]; // copying the old datas array
+
         newArr[startingPosition[0]][startingPosition[1]] = 3
         newArr[startingPosition[0]][startingPosition[1] - 1] = 3
         newArr[startingPosition[0]][startingPosition[1] - 2] = 3
-        let newFood = [...food]
-        newFood = [5, 10]
 
-        setFood(newFood)
+        createFood()
         setGrid(newArr)
 
     }
     // detect where to go 
     const keypress = (e: any) => {
         e.preventDefault()
-        if (e.key === "ArrowUp" || e.key === "w") return setDirection(() => Direction.Up)
-        if (e.key === "ArrowDown" || e.key === "s") return setDirection(Direction.Down)
-        if (e.key === "ArrowLeft" || e.key === "a") return setDirection(Direction.Left)
-        if (e.key === "ArrowRight" || e.key === "d") return setDirection(Direction.Right)
+        console.log(direction)
+        if (e.key === "ArrowUp" || e.key === "w") {
+         setDirection((_prevState) => Direction.Up)
+
+        }
+        if (e.key === "ArrowDown" || e.key === "s") {
+        setDirection((_prevState) => Direction.Down)
+
+        }
+        if (e.key === "ArrowLeft" || e.key === "a") {
+           setDirection((_prevState) => Direction.Left)
+
+
+        }
+        if (e.key === "ArrowRight" || e.key === "d") {
+          setDirection((_prevState) => Direction.Right)
+
+
+        }
 
     }
 
     useEffect(() => {
         const interval = setInterval(() => {
-            if (isPlaying) setGameTime((_prevTime) => _prevTime + 1)
+            if (isPlaying) {
+                setGameTime((_prevTime) => _prevTime + 1);
+                setErrorMessage('')
+            }
         }, 100);
+
         return () => clearInterval(interval)
     }, [isPlaying]);
 
@@ -66,60 +85,91 @@ export const Grid: FC<IGridProps> = ({ size }) => {
         let newArr = [...grid]; // copying the old datas array
         let newPositon = [...startingPosition]
         let newBody = [...body]
+
         // console.log(body)
         if (isPlaying) {
+            try {
 
-            switch (direction) {
-                case Direction.Up:
-                    newPositon[0] = newPositon[0] - 1
-                    break;
-                case Direction.Down:
-                    newPositon[0] = newPositon[0] + 1
-                    break;
-                case Direction.Left:
-                    newPositon[1] = newPositon[1] - 1
-                    break;
-                case Direction.Right:
-                    newPositon[1] = newPositon[1] + 1
-                    break;
+                switch (direction) {
+                    case Direction.Up:
+                        if (newPositon[0] - 1 < 0) throw new Error('You lost')
+                        newPositon[0] = newPositon[0] - 1
+                        break;
+                    case Direction.Down:
+                        if (newPositon[0] + 1 > size - 1) throw new Error('You lost')
+                        newPositon[0] = newPositon[0] + 1
+                        break;
+                    case Direction.Left:
+                        if (newPositon[1] - 1 < 0) throw new Error('You lost')
+                        newPositon[1] = newPositon[1] - 1
+                        break;
+                    case Direction.Right:
+                        if (newPositon[1] + 1 > size - 1) throw new Error('You lost')
+                        newPositon[1] = newPositon[1] + 1
+                        break;
 
-            }
-            newBody.splice(-1, 1)
-            newBody.unshift(newPositon)
-            newArr = createGrid(size)
-            for (let i = 0; i < newBody.length; i++) {
-                newArr[newBody[i][0]][newBody[i][1]] = 3;
-
-            }
-
-            // adds food
-            newArr[food[0]][food[1]] = 2
-            // if head = food 
-            if (newPositon[0] === food[0] && newPositon[1] === food[1]) {
-                // ADD LENGTH
+                }
+                if (newBody.find((el) => el[0] === newPositon[0] && el[1] === newPositon[1])) throw new Error('You lost')
+                newBody.splice(-1, 1)
                 newBody.unshift(newPositon)
-                setLength(() => length + 1)
+                newArr = createGrid(size)
+                for (let i = 0; i < newBody.length; i++) {
+                    newArr[newBody[i][0]][newBody[i][1]] = 3;
+                }
 
+                newArr[food[0]][food[1]] = 2
+                // if head = food 
+                if (newPositon[0] === food[0] && newPositon[1] === food[1]) {
+                    // ADD LENGTH
+                    newBody.unshift(newPositon)
+                    // remove food 
+                    newArr[food[0]][food[1]] = 1
+                    createFood()
+                    setLength(() => length + 1)
+
+                }
+
+
+                // detect collision with itself
+
+
+            } catch (error: any) {
+                // detect if there is a collision with a wall 
+                setErrorMessage(error.message)
+                setIsPlaying(!isPlaying)
+                setGameTime(0)
+                setLength(3)
+                newArr = createGrid(size)
+                newBody = [[startingPosition[0], startingPosition[1]], [startingPosition[0], startingPosition[1] - 1], [startingPosition[0], startingPosition[1] - 2]]
+                newPositon = [size / 2, size / 2]
+
+            } finally {
+                setStartingPosition(newPositon)
+
+                setBody(newBody)
+                setGrid(newArr)
             }
-            setBody(newBody)
-            setStartingPosition(newPositon)
-            setGrid(newArr)
+
+
+
         }
     }
 
     const createFood = () => {
         // creates random food where not body 
         // only 1 food at a time 
-        setFood([1, 2])
-
+        setFood([Math.floor(Math.random() * size), Math.floor(Math.random() * size)])
     }
+    useEffect(() => {
+        // console.log(body.includes(startingPosition, 2))
+
+    }, [startingPosition])
 
     useEffect(() => {
         autoMove()
     }, [gameTime])
     useEffect(() => {
         setup()
-        // console.log(grid)
 
         window.addEventListener('keydown', (e) => keypress(e))
         return () => window.removeEventListener('keydown', keypress)
@@ -133,6 +183,7 @@ export const Grid: FC<IGridProps> = ({ size }) => {
             <div>
                 <div className="game-header">
                     <button onClick={() => { setIsPlaying(() => !isPlaying); setGameTime(() => 0) }}>{!isPlaying ? "Start Game" : "Stop Game"}</button>
+                    <p>{errorMessage.toString()}</p>
                     <p>Game Time {gameTime !== 0 && gameTime}</p>
                     {/* <p>Direction {direction}</p> */}
                 </div>
@@ -141,7 +192,7 @@ export const Grid: FC<IGridProps> = ({ size }) => {
                     {
                         grid.map((element: any, indexA: number) => {
                             return element.map((element: any, indexB: number) => {
-                                return <Cell key={`${indexA},${indexB}`} value={element} />
+                                return <Cell className={`${indexA} ${indexB}`} key={`${indexA},${indexB}`} value={element} />
                             })
                         })
                     }
